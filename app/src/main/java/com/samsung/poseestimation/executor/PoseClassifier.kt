@@ -14,19 +14,19 @@ limitations under the License.
 ==============================================================================
 */
 
-package org.tensorflow.lite.examples.poseestimation.ml
+package com.samsung.poseestimation.executor
 
 import android.content.Context
-import com.samsung.poseestimation.data.Human
 import org.tensorflow.lite.Interpreter
+import com.samsung.poseestimation.data.Human
 import org.tensorflow.lite.support.common.FileUtil
 
 class PoseClassifier(
     private val interpreter: Interpreter,
     private val labels: List<String>
 ) {
-    private val inputShape = interpreter.getInputTensor(0).shape()
-    private val outputShape = interpreter.getOutputTensor(0).shape()
+    private val input = interpreter.getInputTensor(0).shape()
+    private val output = interpreter.getOutputTensor(0).shape()
 
     companion object {
         private const val MODEL_FILENAME = "classifier.tflite"
@@ -50,7 +50,7 @@ class PoseClassifier(
 
     fun classify(person: Human?): List<Pair<String, Float>> {
         // Preprocess the pose estimation result to a flat array
-        val inputVector = FloatArray(inputShape[1])
+        val inputVector = FloatArray(input[1])
         person?.points?.forEachIndexed { index, keyPoint ->
             inputVector[index * 3] = keyPoint.coordinate.y
             inputVector[index * 3 + 1] = keyPoint.coordinate.x
@@ -58,7 +58,7 @@ class PoseClassifier(
         }
 
         // Postprocess the model output to human readable class names
-        val outputTensor = FloatArray(outputShape[1])
+        val outputTensor = FloatArray(output[1])
         interpreter.run(arrayOf(inputVector), arrayOf(outputTensor))
         val output = mutableListOf<Pair<String, Float>>()
         outputTensor.forEachIndexed { index, score ->

@@ -26,7 +26,6 @@ class ModelExecutor(
     var threshold: Float = 0.5F,
     val context: Context,
     val executorListener: ExecutorListener?
-
 ) {
     private external fun ennInitialize()
     private external fun ennDeinitialize()
@@ -42,7 +41,6 @@ class ModelExecutor(
     private var bufferSet: Long = 0
     private var nInBuffer: Int = 0
     private var nOutBuffer: Int = 0
-    private var poseResult: Human? = null // 포즈 결과를 저장하는 변수
 
     init {
         System.loadLibrary("enn_jni")
@@ -65,7 +63,7 @@ class ModelExecutor(
         nOutBuffer = bufferSetInfo.n_out_buf
     }
 
-    fun process(image: Bitmap, callback: (Human) -> Unit) {
+    fun process(image: Bitmap) {
         // Process Image to Input Byte Array
         val input = preProcess(image)
         // Copy Input Data
@@ -79,21 +77,10 @@ class ModelExecutor(
         val heatmapModelOutput = ennMemcpyDeviceToHost(bufferSet, 3)
         val offsetModelOutput = ennMemcpyDeviceToHost(bufferSet, 4)
 
-        // 추론 결과를 poseResult에 저장
-        val result = postProcess(heatmapModelOutput, offsetModelOutput)
-        poseResult = result
-
-        // 콜백을 호출하여 결과 반환
-        callback(result)
+        executorListener?.onResults(
+            postProcess(heatmapModelOutput, offsetModelOutput), inferenceTime
+        )
     }
-
-
-    // getPoseResult() 메서드
-    fun getPoseResult(image: Bitmap, callback: (Human) -> Unit) {
-        // process() 메서드 호출
-        process(image, callback)
-    }
-
 
     fun closeENN() {
         // Release a buffer array

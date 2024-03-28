@@ -70,6 +70,5 @@ dependencies {
     implementation "androidx.camera:camera-view:${camerax_version}"
 
     implementation 'org.tensorflow:tensorflow-lite:2.5.0'
-    implementation 'org.tensorflow:tensorflow-lite-gpu:2.5.0'
     implementation 'org.tensorflow:tensorflow-lite-support:0.3.0'
 }

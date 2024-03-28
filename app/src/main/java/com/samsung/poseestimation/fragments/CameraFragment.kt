@@ -23,6 +23,7 @@ import com.samsung.poseestimation.data.Human
 import com.samsung.poseestimation.data.ModelConstants
 import com.samsung.poseestimation.databinding.FragmentCameraBinding
 import com.samsung.poseestimation.executor.ModelExecutor
+import com.samsung.poseestimation.executor.PoseClassifier
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -37,13 +38,20 @@ class CameraFragment : Fragment(), ModelExecutor.ExecutorListener {
     private var preview: Preview? = null
     private var imageAnalyzer: ImageAnalysis? = null
     private lateinit var poseClassifier: PoseClassifier
-    // 첫 번째 코드의 CameraFragment 내부에 PoseClassifier 클래스 추가
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
+        binding = FragmentCameraBinding.inflate(layoutInflater)
+
+        return binding.root
+    }
+
     class PoseClassifier(context: Context) {
-        private val poseClassifier: org.tensorflow.lite.examples.poseestimation.ml.PoseClassifier
+        private val poseClassifier: com.samsung.poseestimation.executor.PoseClassifier
 
         init {
             // PoseClassifier 초기화
-            poseClassifier = org.tensorflow.lite.examples.poseestimation.ml.PoseClassifier.create(context)
+            poseClassifier = com.samsung.poseestimation.executor.PoseClassifier.create(context)
         }
 
         // 추정된 포즈를 분류하는 메서드
@@ -56,13 +64,6 @@ class CameraFragment : Fragment(), ModelExecutor.ExecutorListener {
             poseClassifier.close()
         }
     }
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
-        binding = FragmentCameraBinding.inflate(layoutInflater)
-
-        return binding.root
-    }
 
     override fun onViewCreated(
         view: View, savedInstanceState: Bundle?
@@ -72,6 +73,7 @@ class CameraFragment : Fragment(), ModelExecutor.ExecutorListener {
         modelExecutor = ModelExecutor(
             context = requireContext(), executorListener = this
         )
+
         poseClassifier = PoseClassifier(requireContext())
         setCamera()
         setUI()
@@ -137,30 +139,11 @@ class CameraFragment : Fragment(), ModelExecutor.ExecutorListener {
     }
 
     // Process the image
-    // Process the image
-    // Process the image
     private fun process(image: ImageProxy) {
-        image.use {
-            bitmapBuffer.copyPixelsFromBuffer(image.planes[0].buffer)
-            val processedBitmap = processImage(bitmapBuffer)
-            modelExecutor.process(processedBitmap) { result ->
-                // 포즈 분류 수행
-                val poseClassificationResult = poseClassifier.classifyPose(result)
-
-                // UI 업데이트 또는 필요한 작업 수행
-                updateUIWithPoseClassificationResult(poseClassificationResult)
-            }
-        }
+        image.use { bitmapBuffer.copyPixelsFromBuffer(image.planes[0].buffer) }
+        modelExecutor.process(processImage(bitmapBuffer))
     }
 
-    // UI 업데이트 또는 필요한 작업 수행하는 메서드
-    private fun updateUIWithPoseClassificationResult(result: List<Pair<String, Float>>) {
-        // 분류된 결과를 UI에 표시하거나 필요한 작업 수행
-        // 예를 들어, 포즈 분류 결과를 로그로 출력하는 경우:
-        result.forEach { (className, confidence) ->
-            Log.d(TAG, "Pose class: $className, Confidence: $confidence")
-        }
-    }
     private fun processImage(bitmap: Bitmap): Bitmap {
         val rotationMatrix = Matrix().apply { postRotate(90F) }
         val rotatedBitmap = Bitmap.createBitmap(
@@ -229,6 +212,14 @@ class CameraFragment : Fragment(), ModelExecutor.ExecutorListener {
     ) {
         activity?.runOnUiThread {
             if (detectionResult.score >= modelExecutor.threshold) {
+                // 포즈 분류기를 사용하여 포즈 분류 실행
+                val classificationResult = poseClassifier.classifyPose(detectionResult)
+
+                // 로그로 분류 결과 출력
+                classificationResult.forEach { (label, score) ->
+                    Log.d(TAG, "Pose: $label, Score: $score")
+                }
+
                 binding.processData.inferenceTime.text = "$inferenceTime ms"
                 binding.overlay.setResults(detectionResult)
                 binding.overlay.invalidate()
