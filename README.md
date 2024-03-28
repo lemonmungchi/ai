@@ -12,13 +12,14 @@ Github repository
 https://github.com/lemonmungchi/ai
 
 #To do
-
-procedure Detect_Human_Falldown(S1, T1, S2, T2)
+<pre>
+     procedure Detect_Human_Falldown(S1, T1, S2, T2) 
      if S1 == “Not Fall Down” then
-          if S1 != S2 then
-                if  T2 – T1 < 1 second then
-                    alert(“Emergency!”)
-               end-if
-          end-if
-     end-if
-end procedure
+          if S1 != S2 then 
+                if  T2 – T1 < 1 second then 
+                    alert(“Emergency!”) 
+               end-if 
+          end-if 
+     end-if 
+end procedure 
+</pre>
