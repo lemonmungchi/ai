@@ -1,21 +1,24 @@
-# Pose Estimation In Android
-This sample application demonstrates the execution of a converted [PoseNet](https://www.kaggle.com/models/tensorflow/posenet-mobilenet/frameworks/tfJs/variations/float-075/versions/1) model using the ENN framework.
-The model is converted using ENN SDK service with the **Default** hardware type option.
+#Used Model
 
-## Functionality
-The application accepts input from a camera feed or an image file.
-Then, it detects the points of a person and overlays the points and edges of a person.
-Additionally, the inference time is displayed at the bottom of the application interface.
+ENN Pose-Estimation Model
+TFLITE Pose-Classfication Model
+Description
 
-## Getting Started
-To utilize the sample application:
-1.	Download or clone the sample application from this repository.
-2.	Open the sample application project in Android Studio.
-3.	Connect the ERD board to the computer.
-4.	Run the application (using Shift + F10).
-5.	Select Camera or Image mode and provide the data for inference.
+Get a human photo by device's camera.
+ENN Pose-Estimation Model Processes photo and makes human key points.
+TF Lite Pose-Classification Model decide analysis key points and classifies whether a human falls down or not.
+Github repository
 
-To modify the model used in the sample application:
-1.	Copy the desired model file to the `assets` directory within the project.
-2.	Modify the parameters in the ModelConstants.kt file to reflect the specifications of the new model.
-3.	If the inputs and outputs of the model differ from the pre-designed sample application, modify the `preProcess()` and `postProcess()` functions.
+https://github.com/lemonmungchi/ai
+
+#To do
+
+procedure Detect_Human_Falldown(S1, T1, S2, T2)
+     if S1 == “Not Fall Down” then
+          if S1 != S2 then
+                if  T2 – T1 < 1 second then
+                    alert(“Emergency!”)
+               end-if
+          end-if
+     end-if
+end procedure
